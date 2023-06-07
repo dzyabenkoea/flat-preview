@@ -1,13 +1,14 @@
 import rawFlats from '../flats.json'
-import {ArrowPathIcon, ArrowRightIcon} from "@heroicons/react/24/outline";
+import {ArrowPathIcon} from "@heroicons/react/24/outline";
 import './App.css'
 import sectionPlan from './assets/section-plan.png'
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Flat, FlatFilter} from "./types";
 import Filter from "./components/Filter";
 import FlatModal from "./components/FlatModal";
 import SortControl from './components/SortControl'
-import {createLogger} from "vite";
+import FlatTable from "./components/FlatTable";
+import {getFlatList} from "./api/flatList";
 
 function App() {
 
@@ -55,16 +56,6 @@ function App() {
         </ul>
     }
 
-    function parseFlats(flats) {
-        const parsedFlats = structuredClone(flats) as Flat[]
-        for (const flat of parsedFlats) {
-            // flat.area_total = Number(flat.area_total.replace(',', '.'))
-            // flat.area_live = Number(flat.area_live.replace(',', '.'))
-            // flat.area_kitchen = Number(flat.area_kitchen.replace(',', '.'))
-        }
-        return parsedFlats
-    }
-
     function calcPageCount() {
         return Math.ceil(flatList.length / itemsOnPage)
     }
@@ -81,12 +72,9 @@ function App() {
     }
 
     function sortFlats(flats: Flat[], sortKey: string, sortAscending: boolean) {
-
         const sortResult = structuredClone(flats)
-
         if (sortKey === '')
             return flats
-
         sortResult.sort((flat: Flat, flat2: Flat) => {
             const value1 = flat[sortKey]
             const value2 = flat2[sortKey]
@@ -95,9 +83,6 @@ function App() {
             else if (typeof value1 === 'string')
                 return (sortAscending ? 1 : -1) * value1.localeCompare(value2)
         })
-
-        console.log(sortResult)
-
         return sortResult
     }
 
@@ -111,70 +96,15 @@ function App() {
     }, [filterValue, sortKey, sortDirectionAsc, fetchedFlats])
 
     useEffect(() => {
-        console.log('page count ', calcPageCount())
         setPageCount(calcPageCount())
     }, [flatList, itemsOnPage])
 
-    function generateFlatList() {
-        const flat_list = []
-        if (!flatList)
-            return null
-        for (const flat of flatList as Flat[]) {
-            flat_list.push(
-                <li key={flat.id} className='flat-item px-4 py-2 hover:bg-gray-50 cursor-pointer flex justify-between'
-                    onClick={() => setCurrentFlat(flat)}>
-                    <div className="flex gap-4 items-center">
-                        <span className='text-red-500 font-medium'>{flat.id}</span>
-                        <p className='text-gray-500'>комнаты: {flat.rooms} S: {flat.area_total} кв.м.</p>
-                    </div>
-                    <ArrowRightIcon className='arrow-icon opacity-0 w-4 text-red-500'/>
-                </li>)
-        }
-        return flat_list
-    }
-
-    function generateFlatTable(itemsOnPage: number, pageNumber: number) {
-        const renderResult = []
-        if (!flatList)
-            return null
-
-        const startIndex = pageNumber * itemsOnPage;
-        const endIndex = (pageNumber + 1) * itemsOnPage
-        for (const flat of flatList.slice(startIndex, endIndex) as Flat[]) {
-            renderResult.push(
-                <tr className='hover:bg-gray-50 cursor-pointer relative flat-item border-t text-sm' onClick={() => {
-                    setCurrentFlat(flat)
-                }}>
-                    <td className='px-2 py-1'>{flat.id}</td>
-                    <td className='px-2 py-1'>{flat.floor}</td>
-                    <td className='px-2 py-1'>{flat.rooms}</td>
-                    <td className='px-2 py-1'>{flat.area_total}</td>
-                    <td className='hidden sm:block'><ArrowRightIcon className='opacity-0 arrow-icon h-4 text-red-500'/></td>
-                </tr>)
-        }
-
-        return <table className='w-full'>
-            <thead>
-            <th className='px-2 py-1 text-left'>№</th>
-            <th className='px-2 py-1 text-left'>Этаж</th>
-            <th className='px-2 py-1 text-left'>Комнаты</th>
-            <th className='px-2 py-1 text-left'>Площадь</th>
-            <th></th>
-            </thead>
-            <tbody>
-            {renderResult}
-            </tbody>
-        </table>
-    }
-
     useEffect(() => {
         setFetchingFlats(true);
-        fetch('http://vpn-ne.ftp.sh:3000/flat-list')
-            .then(response => response.json())
+        getFlatList()
             .then(data => {
-                const parsed = parseFlats(data)
-                setFetchedFlats(parsed)
-                setFlatList(parsed)
+                setFetchedFlats(data)
+                setFlatList(data)
             })
             .finally(() => setTimeout(() => setFetchingFlats(false), 1000))
     }, [])
@@ -188,7 +118,6 @@ function App() {
                         <h2 className='font-semibold text-2xl py-4 px-4 sticky'>Квартиры</h2>
                         <div className='flex gap-2 items-center'>
                             <Filter filterValue={filterValue} onApply={(newFilter: FlatFilter) => {
-                                console.log('set filter value')
                                 setFilterValue(newFilter)
                             }}/>
                             <SortControl sortOptions={sortOptions} sortAscending={sortDirectionAsc}
@@ -198,7 +127,12 @@ function App() {
                         </div>
                     </div>
                     {fetchingFlats ? <ArrowPathIcon className='h-10 animate-spin text-gray-300'/> :
-                        <div className='overflow-auto'>{generateFlatTable(itemsOnPage, currentPage)}</div>}
+                        <div className='overflow-auto'>
+                            <FlatTable itemsOnPage={itemsOnPage}
+                                       pageNumber={currentPage}
+                                       flatList={flatList}
+                                       rowClicked={(flat)=>setCurrentFlat(flat)} />
+                        </div>}
                 </div>
                 <div className="flex gap-4 items-center flex-wrap justify-between">
                     <Paginator currentPage={currentPage} pages={pageCount}

@@ -169,7 +169,7 @@ function App() {
 
     const value = useMemo(() => {
         setFetchingFlats(true);
-        fetch('http://localhost:3000/flat-list')
+        fetch('http://vpn-ne.ftp.sh:3000/flat-list')
             .then(response => response.json())
             .then(data => {
                 const parsed = parseFlats(data)

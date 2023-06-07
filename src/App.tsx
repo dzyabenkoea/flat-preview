@@ -167,7 +167,7 @@ function App() {
         </table>
     }
 
-    const value = useMemo(() => {
+    useEffect(() => {
         setFetchingFlats(true);
         fetch('http://vpn-ne.ftp.sh:3000/flat-list')
             .then(response => response.json())
@@ -177,7 +177,6 @@ function App() {
                 setFlatList(parsed)
             })
             .finally(() => setTimeout(() => setFetchingFlats(false), 1000))
-        return []
     }, [])
 
     return <div className='sm:flex items-center justify-center h-full w-full min-h-screen'>
@@ -218,7 +217,7 @@ function App() {
                     </div>
                 </div>
             </div>
-            <div className='hidden md:block p-5'>
+            <div className='hidden md:block p-5 max-h-full'>
                 <img src={sectionPlan} alt=""/>
             </div>
             <FlatModal flatData={currentFlat} onClose={() => setCurrentFlat(null)}/>

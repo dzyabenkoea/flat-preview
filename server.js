@@ -9,7 +9,7 @@ import sqlite3 from 'sqlite3';
 const db = new sqlite3.Database('flats.db', sqlite3.OPEN_READWRITE);
 
 var corsOptions = {
-    origin: 'http://vpn-ne.ftp.sh/',
+    origin: 'http://vpn-ne.ftp.sh',
     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 

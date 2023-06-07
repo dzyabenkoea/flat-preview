@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "serve": "node server.js",
     "dev": "vite",
     "dev:tailwind": "run-p dev tailwind",
     "tailwind": "tailwindcss -i ./src/base.css -o ./src/index.css --watch",
@@ -13,8 +14,11 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "sqlite3": "^5.1.6",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

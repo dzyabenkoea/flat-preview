@@ -1,12 +1,13 @@
 import rawFlats from '../flats.json'
-import {ArrowRightIcon} from "@heroicons/react/24/outline";
+import {ArrowPathIcon, ArrowRightIcon} from "@heroicons/react/24/outline";
 import './App.css'
 import sectionPlan from './assets/section-plan.png'
-import {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {Flat, FlatFilter} from "./types";
 import Filter from "./components/Filter";
 import FlatModal from "./components/FlatModal";
 import SortControl from './components/SortControl'
+import {createLogger} from "vite";
 
 function App() {
 
@@ -24,8 +25,8 @@ function App() {
     const [sortKey, setSortKey] = useState('id')
     const [sortDirectionAsc, setSortDirectionAsc] = useState(true)
 
-    const parsedFlats = parseFlats(rawFlats)
-    const [flatList, setFlatList] = useState<Flat[]>(parsedFlats)
+    const [fetchedFlats, setFetchedFlats] = useState([])
+    const [flatList, setFlatList] = useState<Flat[]>([])
     const sortOptions = [
         {key: 'id', value: 'Номер квартиры'},
         {key: 'rooms', value: 'Количетство комнат'},
@@ -34,7 +35,9 @@ function App() {
 
     const [itemsOnPage, setItemsOnPage] = useState(10)
     const [currentPage, setCurrentPage] = useState(0)
-    const [pageCount, setPageCount] = useState(calcPageCount)
+    const [pageCount, setPageCount] = useState(calcPageCount())
+
+    const [fetchingFlats, setFetchingFlats] = useState(false)
 
     function Paginator(props: { currentPage: number, pages: number, onPageChange: (page: number) => void }) {
 
@@ -53,11 +56,11 @@ function App() {
     }
 
     function parseFlats(flats) {
-        const parsedFlats = structuredClone(flats)
+        const parsedFlats = structuredClone(flats) as Flat[]
         for (const flat of parsedFlats) {
-            flat.area_total = Number(flat.area_total.replace(',', '.'))
-            flat.area_live = Number(flat.area_live.replace(',', '.'))
-            flat.area_kitchen = Number(flat.area_kitchen.replace(',', '.'))
+            // flat.area_total = Number(flat.area_total.replace(',', '.'))
+            // flat.area_live = Number(flat.area_live.replace(',', '.'))
+            // flat.area_kitchen = Number(flat.area_kitchen.replace(',', '.'))
         }
         return parsedFlats
     }
@@ -101,11 +104,11 @@ function App() {
     useEffect(() => {
         if (!flatList)
             return
-        let filterAndSortResult = filter(parsedFlats)
+        let filterAndSortResult = filter(fetchedFlats)
         filterAndSortResult = sortFlats(filterAndSortResult, sortKey, sortDirectionAsc)
         setFlatList(structuredClone(filterAndSortResult))
 
-    }, [filterValue, sortKey, sortDirectionAsc])
+    }, [filterValue, sortKey, sortDirectionAsc, fetchedFlats])
 
     useEffect(() => {
         console.log('page count ', calcPageCount())
@@ -164,8 +167,22 @@ function App() {
         </table>
     }
 
+    const value = useMemo(() => {
+        setFetchingFlats(true);
+        fetch('http://localhost:3000/flat-list')
+            .then(response => response.json())
+            .then(data => {
+                const parsed = parseFlats(data)
+                setFetchedFlats(parsed)
+                setFlatList(parsed)
+            })
+            .finally(() => setTimeout(() => setFetchingFlats(false), 1000))
+        return []
+    }, [])
+
     return <div className='sm:flex items-center justify-center h-full w-full min-h-screen'>
-        <div className='md:grid grid-template-flat-preview gap-4 max-w-[1000px] max-h-screen p-5 sm:m-5 sm:border border-red-500 rounded sm:shadow-xl'>
+        <div
+            className='md:grid grid-template-flat-preview gap-4 max-w-[1000px] max-h-screen p-5 sm:m-5 sm:border border-red-500 rounded sm:shadow-xl'>
             <div className='flex flex-col justify-between gap-4'>
                 <div className='flex flex-col'>
                     <div className='flex justify-between flex-wrap items-center border-b border-red-500 mb-4'>
@@ -181,7 +198,8 @@ function App() {
                                          onSelect={(newValue) => setSortKey(newValue)}/>
                         </div>
                     </div>
-                    <div className='overflow-auto'>{generateFlatTable(itemsOnPage, currentPage)}</div>
+                    {fetchingFlats ? <ArrowPathIcon className='h-10 animate-spin text-gray-300'/> :
+                        <div className='overflow-auto'>{generateFlatTable(itemsOnPage, currentPage)}</div>}
                 </div>
                 <div className="flex gap-4 items-center flex-wrap justify-between">
                     <Paginator currentPage={currentPage} pages={pageCount}

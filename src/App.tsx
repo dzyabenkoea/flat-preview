@@ -32,6 +32,7 @@ function App() {
         {key: 'id', value: 'Номер квартиры'},
         {key: 'rooms', value: 'Количетство комнат'},
         {key: 'area_total', value: 'Площадь'},
+        {key: 'floor', value: 'Этаж'},
     ]
 
     const [itemsOnPage, setItemsOnPage] = useState(10)
@@ -138,7 +139,6 @@ function App() {
                     <Paginator currentPage={currentPage} pages={pageCount}
                                onPageChange={(newPage) => setCurrentPage(newPage)}
                                className='mt-4'/>
-
                     <div className='flex gap-2 items-center'>
                         <label htmlFor="elements-on-page">Квартир на странице:</label>
                         <select className='px-1 py-1 rounded border' id="elements-on-page"

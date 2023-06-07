@@ -1,0 +1,11 @@
+.flat-item:hover .arrow-icon {
+  opacity: 100;
+}
+
+.grid-template-flat-preview {
+  grid-template-columns: clamp(200px, 50%, 400px) minmax(300px, 1fr);
+}
+
+.flat-list {
+  height: calc(100% - 2rem - 1rem);
+}

@@ -1,7 +1,6 @@
-import {ReactChild, ReactChildren, useEffect, useReducer, useState} from "react";
-import {AdjustmentsHorizontalIcon, ArrowDownIcon, ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/outline";
+import {MouseEventHandler, useEffect, useReducer, useState} from "react";
+import {AdjustmentsHorizontalIcon,ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/outline";
 import CheckBox from "./CheckBox";
-import {act} from "react-dom/test-utils";
 import {FlatFilter} from "../types";
 
 function Filter(props: { filterValue, onApply: (filterValue) => void }) {
@@ -20,7 +19,7 @@ function Filter(props: { filterValue, onApply: (filterValue) => void }) {
 
     const [extraFiltersVisible, setExtraFiltersVisible] = useState(false)
 
-    function filterValueReducer(filterState: FlatFilter, action) {
+    function filterValueReducer(filterState: FlatFilter, action:{type:string, value: any}) {
         let stateCopy = structuredClone(filterState)
         if (action.type === 'rooms')
             stateCopy.rooms = structuredClone(action.value)
@@ -66,17 +65,18 @@ function Filter(props: { filterValue, onApply: (filterValue) => void }) {
         }
     }, [open])
 
-    function filterIconClickHandler(event) {
+    function filterIconClickHandler(event: any) {
         event.stopPropagation()
         setOpen(!open)
     }
 
-    function toggleValueInArray(toggle: boolean, array: number[], value) {
+    function toggleValueInArray(toggle: boolean, array: number[], value: any) {
         const searchResult = array.find(el => value === el)
         if (searchResult) {
             return array.filter(el => el !== value)
         }
-        array.push(value)
+        if (toggle)
+            array.push(value)
         return array
     }
 

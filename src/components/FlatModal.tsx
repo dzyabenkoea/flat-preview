@@ -1,13 +1,14 @@
 import {XMarkIcon} from "@heroicons/react/24/outline";
 
-function FlatModal(props) {
+function FlatModal(props: any) {
     if (props.flatData) {
         return <div
             className='absolute w-full h-full left-0 top-0 flex items-center justify-center bg-black/10 flex-col gap-2 sm:p-5'
             onClick={props.onClose}>
             <div className='flex flex-col items-center max-w-[75ch] gap-2'>
-                <div className='hidden sm:block rounded-full bg-white hover:bg-gray-50 p-3 cursor-pointer self-end shadow-xl'
-                     onClick={props.onClose}>
+                <div
+                    className='hidden sm:block rounded-full bg-white hover:bg-gray-50 p-3 cursor-pointer self-end shadow-xl'
+                    onClick={props.onClose}>
                     <XMarkIcon className='h-6'/>
                 </div>
                 <div className='bg-white rounded p-8 flex flex-col sm:grid sm:grid-cols-2 sm:gap-4 shadow-xl'
